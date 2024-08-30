@@ -10,7 +10,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.api.RS.Authorization.JWTService;
 import org.api.entity.ContextData;
+import org.api.request.RQ.AuthenticationRequestRQ;
 import org.api.request.authentication.AuthenticationRequestDto;
+import org.api.response.authentication.AuthenticationResponse;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -45,7 +47,7 @@ public class AutenticationJWTRS {
                     content = @Content(schema = @Schema(implementation = AuthenticationRequestDto.class))
             )
             AuthenticationRequestDto request) {
-        String jwt = service.generateJwt(AuthenticationRequestRQ.of(buildContext(), request));
+        AuthenticationResponse jwt =   service.generateJwt(AuthenticationRequestRQ.of(buildContext(), request));
         return Response.ok(jwt).build();
     }
 
