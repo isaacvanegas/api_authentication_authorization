@@ -38,7 +38,7 @@ public class JWTService {
 
         List<UserRol> userRols = userService.verificarUsuario(rq.data().getUserName(),rq.data().getPassword());
 
-        if (userRols != null) {
+        if (userRols != null && !userRols.isEmpty()) {
 
             r.setGenerateJwt(true);
             r.setJwt(Jwt.issuer("igroup")
@@ -51,7 +51,7 @@ public class JWTService {
         } else {
             LOG.warn("generate jwt denied token: " +rq.data().getUserName());
             r.setGenerateJwt(false);
-            r.setError((List<ErrorType>) unauthorizedGenerateJWT("Sin autorización para generar token"));
+            r.setError(List.of((ErrorType) unauthorizedGenerateJWT("Sin autorización para generar token")));
         }
         return r;
     }
