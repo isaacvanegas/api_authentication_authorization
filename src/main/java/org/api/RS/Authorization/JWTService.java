@@ -1,11 +1,14 @@
 package org.api.RS.Authorization;
 
+import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.api.entity.security.User;
+import org.api.entity.security.UserRol;
 import org.api.request.ObjectRQ;
 import org.api.request.authentication.AuthenticationRequestDto;
+import org.api.response.ErrorType;
 import org.api.response.authentication.AuthenticationResponse;
 import org.api.service.security.UserService;
 import org.slf4j.Logger;
@@ -15,8 +18,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.api.response.ErrorType.unauthorizedGenerateJWT;
+
 @Singleton
-@Dependent
 public class JWTService {
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
@@ -32,23 +36,23 @@ public class JWTService {
 
         AuthenticationResponse r = new AuthenticationResponse();
 
-        List<User> verific = userService.verificarUsuario(rq.data().getUserName(),rq.data().getPassword());
+        List<UserRol> userRols = userService.verificarUsuario(rq.data().getUserName(),rq.data().getPassword());
 
-//        if (c != null) {
-//            List<UserRol> userRols = userTransacational.getRolesByIdUsuario(c.getUserId().getId());
-//            r.setGenerateJwt(true);
-//            r.setJwt(Jwt.issuer("igroup")
-//                    .subject(c.getUserId().getUserName())
-//                    .groups(new HashSet<>(userRols.stream()
-//                            .map(ur -> ur.getRolId().getName())
-//                            .collect(Collectors.toList())))
-//                    .expiresAt(System.currentTimeMillis() + 3600).sign());
-//
-//        } else {
-//            LOG.warn("generate jwt denied token: " +rq.context().getToken());
-//            r.setGenerateJwt(false);
-//            r.setError((List<ErrorType>) ErrorType.unauthorizedGenerateJWT("Sin autorización para generar token"));
-//        }
+        if (userRols != null) {
+
+            r.setGenerateJwt(true);
+            r.setJwt(Jwt.issuer("igroup")
+                    .subject(userRols.get(0).getUserId().getName())
+                    .groups(new HashSet<>(userRols.stream()
+                            .map(ur -> ur.getRolId().getDescription())
+                            .collect(Collectors.toList())))
+                    .expiresAt(System.currentTimeMillis() + 3600).sign());
+
+        } else {
+            LOG.warn("generate jwt denied token: " +rq.data().getUserName());
+            r.setGenerateJwt(false);
+            r.setError((List<ErrorType>) unauthorizedGenerateJWT("Sin autorización para generar token"));
+        }
         return r;
     }
 }

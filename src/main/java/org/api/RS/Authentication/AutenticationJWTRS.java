@@ -1,11 +1,9 @@
 package org.api.RS.Authentication;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HeaderParam;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.api.RS.Authorization.JWTService;
@@ -29,8 +27,10 @@ public class AutenticationJWTRS {
     @Inject
     JWTService service;
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @POST
+    @PermitAll
+    @Path("/generate-jwt")
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             operationId = "getJwt",
             summary = "autenticación y autorización",

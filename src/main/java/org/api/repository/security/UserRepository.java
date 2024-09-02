@@ -1,45 +1,39 @@
 package org.api.repository.security;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.api.entity.security.Rol;
 import org.api.entity.security.User;
 import org.api.entity.security.UserRol;
+import org.api.serviceImpl.security.UserServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+@ApplicationScoped
 public class UserRepository implements PanacheRepository<User> {
+    private static final Logger LOG = LoggerFactory.getLogger(UserRepository.class);
+
+    public List<UserRol> verificarUsuario(String userName, String password) {
 
 
-    public List<User> verificarUsuario(String userName, String password) {
+        String hql = "select ur from UserRol ur " +
+                "left join fetch ur.userId u " +
+                "left join fetch ur.rolId r " +
+                "where u.name = :userName " +
+                "and u.password = :password";
 
-        // Crear consulta
-        CriteriaBuilder builder = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery<User> query = builder.createQuery(User.class);
-        Root<User> root = query.from(User.class);
 
-        // Realizar join con la tabla UserRol
-        Join<User, UserRol> userRolesJoin = root.join("userRoles", JoinType.LEFT);
+        return getEntityManager()
+                .createQuery(hql, UserRol.class)
+                .setParameter("userName", userName)
+                .setParameter("password", password)
+                .getResultList();
 
-        // Lista de predicados para la cláusula WHERE
-        List<Predicate> predicates = new ArrayList<>();
-
-        // Comparar nombre de usuario
-        predicates.add(builder.equal(root.get("name"), userName));
-
-        // Comparar contraseña (se asume que está encriptada)
-        predicates.add(builder.equal(root.get("password"), password));
-
-        // Crear la consulta con las condiciones
-        query.select(root).where(predicates.toArray(new Predicate[0])).distinct(true);
-
-        // Ejecutar la consulta
-        TypedQuery<User> typedQuery = getEntityManager().createQuery(query);
-
-        // Retornar la lista de usuarios con roles
-        return typedQuery.getResultList();
     }
 
 
